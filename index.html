@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>NAICS Code Lookup</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      color: #333;
+    }
+    .form-container {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      width: 300px;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    .result-container {
+      margin-top: 20px;
+      width: 300px;
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+    .business {
+      margin-bottom: 10px;
+    }
+    .business h2 {
+      margin: 0 0 5px 0;
+      font-size: 18px;
+      color: #007bff;
+    }
+    .business p {
+      margin: 2px 0;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>NAICS Code Lookup</h1>
+  <div class="form-container">
+    <input type="text" id="address" placeholder="Enter Business Address" />
+    <button onclick="lookupNAICS()">Lookup NAICS Code</button>
+  </div>
+  <div class="result-container" id="result"></div>
+  
+  <script>
+    async function lookupNAICS() {
+      const address = document.getElementById('address').value.trim();
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = ''; // Clear previous results
+      
+      if (!address) {
+        resultDiv.innerHTML = '<p class="error">Please enter a valid address.</p>';
+        return;
+      }
+      
+      // Show loading message
+      resultDiv.innerHTML = '<p>Loading...</p>';
+      
+      try {
+        const response = await fetch('YOUR_APPS_SCRIPT_WEB_APP_URL', { // Replace with your Apps Script URL
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ address })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+          resultDiv.innerHTML = `<p class="error">${data.error}</p>`;
+        } else if (data.businesses && data.businesses.length > 0) {
+          let html = '';
+          data.businesses.forEach(business => {
+            html += `
+              <div class="business">
+                <h2>${business.business_name}</h2>
+                <p><strong>Business Type:</strong> ${business.business_type}</p>
+                <p><strong>Latitude:</strong> ${business.latitude}</p>
+                <p><strong>Longitude:</strong> ${business.longitude}</p>
+                <p><strong>NAICS Code:</strong> ${business.naics_code}</p>
+              </div>
+            `;
+          });
+          resultDiv.innerHTML = html;
+        } else {
+          resultDiv.innerHTML = '<p class="error">No business found at the provided address.</p>';
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        resultDiv.innerHTML = '<p class="error">An error occurred. Please try again later.</p>';
+      }
+    }
+  </script>
+</body>
+</html>
